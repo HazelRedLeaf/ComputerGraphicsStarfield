@@ -13,19 +13,18 @@ using glm::mat3;
 const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 SDL_Surface* screen;
-int t;
-vector<vec3> stars(1000); // store location of all stars
+int t; // time
+vector<vec3> stars(1000); 		// store location of all stars
 
 /* ----------------------------------------------------------------------------*/
 /* FUNCTIONS                                                                   */
 void Update();
 void Draw();
-void Interpolate(vec3 a, vec3 b, vector<vec3>& result);
 
 int main(int argc, char* argv[])
 {
 	screen = InitializeSDL(SCREEN_WIDTH, SCREEN_HEIGHT);
-	t = SDL_GetTicks();	// Set start value for timer.
+	t = SDL_GetTicks();	// Set start value for timer (to current time)
 
 	// create initial random positions for the stars
 	for(int i = 0; i < 1000; i++)
@@ -67,6 +66,19 @@ void Update()
 	float dt = float(t2-t);
 	t = t2;
 	//cout << "Render time: " << dt << " ms." << endl;
+
+    // simulate motion
+    for(size_t i = 0; i < stars.size(); ++i)
+    {
+        // update stars Z coordinate
+        stars[i].z = stars[i].z - 0.005*dt;
+
+        // a star is out of the screen
+        if(stars[i].z <= 0)
+            stars[i].z += 1;
+        if(stars[i].z > 1)
+            stars[i].z -= 1;
+    }
 }
 
 void Draw()
@@ -77,17 +89,18 @@ void Draw()
 	if(SDL_MUSTLOCK(screen))
 		SDL_LockSurface(screen);
 
+    // initial positioning of the stars
 	for(size_t i = 0; i < stars.size(); ++i)
 	{
-		// focal length
-		float f = SCREEN_HEIGHT / 2;
-
+		float f = SCREEN_HEIGHT / 2;	// focal length
+		
 		// 2D projection (u, v) of 3D coordinates (x, y, z)
 		float u = f * stars[i].x / stars[i].z + SCREEN_WIDTH/ 2;
 		float v = f * stars[i].y / stars[i].z + SCREEN_HEIGHT / 2;
 
 		// position stars
 		vec3 color(1.0, 1.0, 1.0);
+		vec3 colorDimmed = 0.2f * vec3(1, 1, 1) / stars[i].z*stars[i].z;
 		PutPixelSDL(screen, u, v, color);
 	}
 
@@ -95,14 +108,4 @@ void Draw()
 		SDL_UnlockSurface(screen);
 
 	SDL_UpdateRect(screen, 0, 0, 0, 0);
-}
-
-void Interpolate(vec3 a, vec3 b, vector<vec3>& result)
-{
-	for( unsigned int i=0; i < result.size(); i++)
-	{
-		result[i].x = a.x + i * (b.x - a.x) / (result.size() - 1);
-		result[i].y = a.y + i * (b.y - a.y) / (result.size() - 1);
-		result[i].z = a.z + i * (b.z - a.z) / (result.size() - 1);
-	}
 }
