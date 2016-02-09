@@ -71,25 +71,18 @@ void Update()
 
 void Draw()
 {
+	// initialise a black screen
+	SDL_FillRect(screen, 0, 0);
+
 	if(SDL_MUSTLOCK(screen))
 		SDL_LockSurface(screen);
 
-	// initialise a black screen
-	for(int y = 0; y < SCREEN_HEIGHT; ++y)
-	{
-		for(int x = 0; x < SCREEN_WIDTH; ++x)
-		{
-			vec3 color(0.0, 0.0, 0.0);
-			PutPixelSDL(screen, x, y, color);
-		}
-	}
-
-	for(int i = 0; i < 1000; ++i)
+	for(size_t i = 0; i < stars.size(); ++i)
 	{
 		// focal length
 		float f = SCREEN_HEIGHT / 2;
 
-		// 2D screen coordinates (u, v)
+		// 2D projection (u, v) of 3D coordinates (x, y, z)
 		float u = f * stars[i].x / stars[i].z + SCREEN_WIDTH/ 2;
 		float v = f * stars[i].y / stars[i].z + SCREEN_HEIGHT / 2;
 
